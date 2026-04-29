@@ -53,3 +53,11 @@ dkms.conf
 
 # debug information files
 *.dwo
+
+# Build output
+server
+client
+
+# Generated RSA keys (private key must never be committed)
+client_private.pem
+client_public.pem
