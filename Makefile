@@ -2,7 +2,7 @@ CC      = gcc
 CFLAGS  = -Wall -Wextra -pedantic -std=c11 -O2
 LDFLAGS = -lssl -lcrypto
 
-TARGETS = server client
+TARGETS = server client tasks
 
 .PHONY: all clean keys run-server run-client
 
@@ -17,8 +17,11 @@ client: secure_client.c crypto_common.h
 keys:
 	@bash generate_keys.sh
 
+tasks: crypto_tasks.c
+	$(CC) $(CFLAGS) -o $@ $< $(LDFLAGS)
+
 clean:
-	rm -f $(TARGETS) client_private.pem client_public.pem
+	rm -f $(TARGETS) client_private.pem client_public.pem signing_key.pem verify_key.pem signature.bin
 
 run-server: server
 	./server
