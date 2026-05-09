@@ -255,13 +255,19 @@ int main(void)
     /* 2.1 create digital signature and store key files */
     create_ds(message);
 
-    /* 2.2 verify the signature */
+    /* 2.2 — check original message */
     const char *result = check_signature(message);
-    printf("[check_signature] Original message : %s\n", result);
+    if (strcmp(result, "VALID") == 0)
+        printf("[main] \"%s\" => Signature VALID. Message is authentic.\n", message);
+    else
+        printf("[main] \"%s\" => NOTVALID. Message is corrupt!\n", message);
 
-    /* tamper test: different message → must say NOTVALID */
+    /* 2.2 — check tampered message */
     const char *bad_result = check_signature("tampered message");
-    printf("[check_signature] Tampered message : %s\n", bad_result);
+    if (strcmp(bad_result, "VALID") == 0)
+        printf("[main] \"tampered message\" => Signature VALID. Message is authentic.\n");
+    else
+        printf("[main] \"tampered message\" => NOTVALID. Message is corrupt!\n");
 
     return 0;
 }
