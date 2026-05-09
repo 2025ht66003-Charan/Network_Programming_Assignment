@@ -58,6 +58,7 @@ dkms.conf
 server
 client
 tasks
+test_corrupt
 
 # Generated RSA keys (private keys must never be committed)
 client_private.pem
