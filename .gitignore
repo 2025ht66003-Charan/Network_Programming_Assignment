@@ -57,7 +57,11 @@ dkms.conf
 # Build output
 server
 client
+tasks
 
-# Generated RSA keys (private key must never be committed)
+# Generated RSA keys (private keys must never be committed)
 client_private.pem
 client_public.pem
+signing_key.pem
+verify_key.pem
+signature.bin
