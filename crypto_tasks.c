@@ -215,7 +215,7 @@ const char *check_signature(const char *message)
     EVP_PKEY_free(pkey);
     free(sig);
 
-    return (result == 1) ? "OK" : "NOTVALID";
+    return (result == 1) ? "VALID" : "NOTVALID";
 }
 
 
@@ -251,11 +251,11 @@ int main(void)
 
     /* 2.2 verify the signature */
     const char *result = check_signature(message);
-    printf("[check_signature] result : %s\n", result);   /* OK */
+    printf("[check_signature] Original message : %s\n", result);
 
-    /* tamper test: verify with wrong message → must say NOTVALID */
+    /* tamper test: different message → must say NOTVALID */
     const char *bad_result = check_signature("tampered message");
-    printf("[check_signature] tampered test : %s\n", bad_result);  /* NOTVALID */
+    printf("[check_signature] Tampered message : %s\n", bad_result);
 
     return 0;
 }
