@@ -215,7 +215,13 @@ const char *check_signature(const char *message)
     EVP_PKEY_free(pkey);
     free(sig);
 
-    return (result == 1) ? "VALID" : "NOTVALID";
+    if (result == 1) {
+        printf("Signature check : VALID\n");
+        return "VALID";
+    } else {
+        printf("Signature check : NOTVALID — message is corrupt or tampered!\n");
+        return "NOTVALID";
+    }
 }
 
 
