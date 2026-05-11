@@ -84,8 +84,8 @@ The system is implemented across three primary source files: `secure_server.c`, 
 
 Network communication is the backbone of modern computing. As systems exchange data over shared and potentially untrusted networks, two critical security properties must be ensured:
 
-- **Confidentiality** — data must not be readable by unauthorized parties
-- **Integrity and Authenticity** — data must not be altered in transit, and the identity of the sender must be verifiable
+- **Confidentiality** - data must not be readable by unauthorized parties
+- **Integrity and Authenticity** - data must not be altered in transit, and the identity of the sender must be verifiable
 
 Traditional socket programming in C provides only raw, unencrypted TCP streams. This assignment extends basic TCP communication with cryptographic mechanisms to address these security concerns.
 
@@ -158,7 +158,7 @@ The system operates over IPv4 TCP on localhost (127.0.0.1) port 8443. It is desi
 
 The system consists of two subsystems:
 
-**Subsystem 1 — Secure TCP Streaming (Task: Client-Server)**
+**Subsystem 1 - Secure TCP Streaming (Task: Client-Server)**
 ```
 [ Client ]                              [ Server ]
    |                                        |
@@ -174,19 +174,19 @@ The system consists of two subsystems:
    |                                        | 3. Display plaintext
 ```
 
-**Subsystem 2 — Standalone Crypto Tasks**
+**Subsystem 2 - Standalone Crypto Tasks**
 ```
 encrypt(plain_text)
-  └─ AES-128-CBC → ciphertext bytes → hex string
+  +- AES-128-CBC -> ciphertext bytes -> hex string
 
 decrypt(cipher_text)
-  └─ hex string → bytes → AES-128-CBC → plain_text
+  +- hex string -> bytes -> AES-128-CBC -> plain_text
 
 create_ds(message)
-  └─ RSA keygen → sign with SHA-256 → save files
+  +- RSA keygen -> sign with SHA-256 -> save files
 
 check_signature(message)
-  └─ load key + signature → verify → "VALID" / "NOTVALID"
+  +- load key + signature -> verify -> "VALID" / "NOTVALID"
 ```
 
 ### 3.2 Wire Packet Format
@@ -203,7 +203,7 @@ Each message sent over TCP uses the following packet layout:
 
 - `sig_len` and `cip_len` are sent in **network byte order** (big-endian) using `htonl`/`ntohl`
 - `IV` is a fresh 16-byte random value generated per message using `RAND_bytes()`
-- Signature covers the **ciphertext** bytes (not plaintext) — server verifies before decrypting
+- Signature covers the **ciphertext** bytes (not plaintext) - server verifies before decrypting
 
 ### 3.3 Encryption Design (AES-128-CBC)
 
@@ -211,7 +211,7 @@ AES (Advanced Encryption Standard) is a symmetric block cipher operating on 128-
 
 **CBC Mode Operation:**
 ```
-Plaintext[i] XOR Ciphertext[i-1] → AES_Encrypt(key) → Ciphertext[i]
+Plaintext[i] XOR Ciphertext[i-1] -> AES_Encrypt(key) -> Ciphertext[i]
 ```
 
 - Block 0 uses the IV as the "previous ciphertext"
@@ -224,33 +224,33 @@ Plaintext[i] XOR Ciphertext[i-1] → AES_Encrypt(key) → Ciphertext[i]
 
 ### 3.4 Digital Signature Design (RSA-2048 / SHA-256)
 
-Digital signatures use **asymmetric cryptography** — what the private key locks, only the public key can unlock.
+Digital signatures use **asymmetric cryptography** - what the private key locks, only the public key can unlock.
 
 **Signing (create_ds):**
 ```
-message → SHA-256 hash → 32-byte digest
-32-byte digest → RSA encrypt with private key → 256-byte signature
+message -> SHA-256 hash -> 32-byte digest
+32-byte digest -> RSA encrypt with private key -> 256-byte signature
 ```
 
 **Verification (check_signature):**
 ```
-received message → SHA-256 hash → digest A
-signature → RSA decrypt with public key → digest B
-if (digest A == digest B) → VALID
-else → NOTVALID
+received message -> SHA-256 hash -> digest A
+signature -> RSA decrypt with public key -> digest B
+if (digest A == digest B) -> VALID
+else -> NOTVALID
 ```
 
 ### 3.5 File Structure
 
 ```
 Network_Programming_Assignment/
-├── crypto_common.h       Shared constants and PktHeader struct
-├── secure_server.c       TCP server with signature verify + AES decrypt
-├── secure_client.c       TCP client with AES encrypt + RSA sign
-├── crypto_tasks.c        Standalone encrypt/decrypt/create_ds/check_signature
-├── test_corrupt.c        Corruption test demonstrating NOTVALID detection
-├── generate_keys.sh      RSA-2048 key pair generation script
-└── Makefile              Build targets
++-- crypto_common.h       Shared constants and PktHeader struct
++-- secure_server.c       TCP server with signature verify + AES decrypt
++-- secure_client.c       TCP client with AES encrypt + RSA sign
++-- crypto_tasks.c        Standalone encrypt/decrypt/create_ds/check_signature
++-- test_corrupt.c        Corruption test demonstrating NOTVALID detection
++-- generate_keys.sh      RSA-2048 key pair generation script
++-- Makefile              Build targets
 ```
 
 ### 3.6 Function Design Summary
@@ -272,7 +272,7 @@ Network_Programming_Assignment/
 
 ## CHAPTER 4: IMPLEMENTATION DETAILS / SOURCE CODE
 
-### 4.1 crypto_common.h — Shared Header
+### 4.1 crypto_common.h - Shared Header
 
 Defines shared constants, the pre-shared AES key, and the `PktHeader` struct used by both client and server.
 
@@ -307,15 +307,15 @@ typedef struct {
 ```
 
 **Key design points:**
-- `PktHeader` is `__attribute__((packed))` — no padding bytes, maps directly onto the wire
+- `PktHeader` is `__attribute__((packed))` - no padding bytes, maps directly onto the wire
 - `uint32_t` for lengths ensures consistent 4-byte integers on all platforms
-- AES key is `static const` — private to each translation unit
+- AES key is `static const` - private to each translation unit
 
 ---
 
-### 4.2 crypto_tasks.c — Task 1 and Task 2
+### 4.2 crypto_tasks.c - Task 1 and Task 2
 
-#### Task 1 — encrypt() function
+#### Task 1 - encrypt() function
 
 Encrypts a plaintext string using AES-128-CBC. Returns a hex-encoded string.
 
@@ -343,7 +343,7 @@ char *encrypt(const char *plain_text)
 }
 ```
 
-#### Task 1 — decrypt() function
+#### Task 1 - decrypt() function
 
 Reverses `encrypt()`. Takes a hex string and returns the original plaintext.
 
@@ -370,7 +370,7 @@ char *decrypt(const char *cipher_text)
 }
 ```
 
-#### Task 2.1 — create_ds() function
+#### Task 2.1 - create_ds() function
 
 Generates RSA-2048 key pair, signs the message, saves key files and signature.
 
@@ -409,7 +409,7 @@ void create_ds(const char *message)
 }
 ```
 
-#### Task 2.2 — check_signature() function
+#### Task 2.2 - check_signature() function
 
 Loads the public key and signature, verifies, and returns `"VALID"` or `"NOTVALID"` using an `if` condition.
 
@@ -453,7 +453,7 @@ const char *check_signature(const char *message)
 
 ---
 
-### 4.3 secure_server.c — TCP Server
+### 4.3 secure_server.c - TCP Server
 
 The server performs the following on startup:
 1. Loads `client_public.pem`
@@ -464,10 +464,10 @@ For each message received:
 1. Reads the 24-byte `PktHeader` (sig_len, cipher_len, IV)
 2. Reads `sig_len` bytes of RSA signature
 3. Reads `cipher_len` bytes of ciphertext
-4. Calls `verify_signature()` — rejects if invalid
-5. Calls `aes_decrypt()` — displays the plaintext
+4. Calls `verify_signature()` - rejects if invalid
+5. Calls `aes_decrypt()` - displays the plaintext
 
-**recv_exact() — reliable receive:**
+**recv_exact() - reliable receive:**
 ```c
 static int recv_exact(int fd, void *buf, size_t n)
 {
@@ -483,15 +483,15 @@ static int recv_exact(int fd, void *buf, size_t n)
 
 ---
 
-### 4.4 secure_client.c — TCP Client
+### 4.4 secure_client.c - TCP Client
 
 For each message typed by the user:
 1. Generates a random 16-byte IV using `RAND_bytes()`
-2. Encrypts using `aes_encrypt()` → ciphertext
-3. Signs ciphertext using `rsa_sign()` → signature
+2. Encrypts using `aes_encrypt()` -> ciphertext
+3. Signs ciphertext using `rsa_sign()` -> signature
 4. Sends `PktHeader` + signature + ciphertext using `send_exact()`
 
-**send_exact() — reliable send:**
+**send_exact() - reliable send:**
 ```c
 static int send_exact(int fd, const void *buf, size_t n)
 {
@@ -507,13 +507,13 @@ static int send_exact(int fd, const void *buf, size_t n)
 
 ---
 
-### 4.5 test_corrupt.c — Corruption Test
+### 4.5 test_corrupt.c - Corruption Test
 
 Demonstrates the full signature lifecycle:
 1. Generates a valid signature
-2. Verifies it → `VALID`
+2. Verifies it -> `VALID`
 3. Overwrites `signature.bin` with garbage bytes
-4. Verifies again → `NOTVALID`
+4. Verifies again -> `NOTVALID`
 
 ```c
 printf("=== STEP 3: Corrupt signature.bin ===\n");
@@ -553,7 +553,7 @@ clean:
 
 ## CHAPTER 5: TESTING
 
-### 5.1 Test 1 — Encryption and Decryption
+### 5.1 Test 1 - Encryption and Decryption
 
 **Objective:** Verify that `encrypt()` produces ciphertext and `decrypt()` recovers the original plaintext.
 
@@ -570,11 +570,11 @@ cipher_text : 46dad22c2eb638e219fb7106a07ef0be
 decrypted   : abcde
 ```
 
-**Conclusion:** PASS — ciphertext is unreadable hex; decryption restores original text exactly.
+**Conclusion:** PASS - ciphertext is unreadable hex; decryption restores original text exactly.
 
 ---
 
-### 5.2 Test 2 — Valid Digital Signature
+### 5.2 Test 2 - Valid Digital Signature
 
 **Objective:** Verify that `check_signature()` returns `VALID` when the correct message and signature are used.
 
@@ -592,11 +592,11 @@ Signature check : VALID
 [main] "This message is signed." => Signature VALID. Message is authentic.
 ```
 
-**Conclusion:** PASS — RSA signature verification succeeds for the original message.
+**Conclusion:** PASS - RSA signature verification succeeds for the original message.
 
 ---
 
-### 5.3 Test 3 — Tampered Message Detection
+### 5.3 Test 3 - Tampered Message Detection
 
 **Objective:** Verify that `check_signature()` returns `NOTVALID` when a different message is checked against the original signature.
 
@@ -612,11 +612,11 @@ Signature check : NOTVALID - message is corrupt or tampered!
 [main] "tampered message" => NOTVALID. Message is corrupt!
 ```
 
-**Conclusion:** PASS — signature mismatch is correctly detected.
+**Conclusion:** PASS - signature mismatch is correctly detected.
 
 ---
 
-### 5.4 Test 4 — Corrupted Signature File
+### 5.4 Test 4 - Corrupted Signature File
 
 **Objective:** Verify that overwriting `signature.bin` with garbage data causes `check_signature()` to return `NOTVALID`.
 
@@ -644,11 +644,11 @@ Signature check : NOTVALID - message is corrupt or tampered!
 [test] Result : NOTVALID
 ```
 
-**Conclusion:** PASS — file corruption is detected immediately.
+**Conclusion:** PASS - file corruption is detected immediately.
 
 ---
 
-### 5.5 Test 5 — Secure TCP Streaming (Client-Server)
+### 5.5 Test 5 - Secure TCP Streaming (Client-Server)
 
 **Objective:** Verify end-to-end encrypted and signed message transmission over TCP.
 
@@ -668,7 +668,7 @@ make keys        # generate RSA key pair
 [Server] OK (verified)   32         "Hello, secure world!"
 ```
 
-**Conclusion:** PASS — message encrypted on client, signature verified on server, plaintext displayed correctly.
+**Conclusion:** PASS - message encrypted on client, signature verified on server, plaintext displayed correctly.
 
 ---
 
@@ -676,7 +676,7 @@ make keys        # generate RSA key pair
 
 | Test | Description | Expected | Result |
 |---|---|---|---|
-| T1 | encrypt("abcde") and decrypt back | Ciphertext ≠ plaintext; decrypt = "abcde" | PASS |
+| T1 | encrypt("abcde") and decrypt back | Ciphertext != plaintext; decrypt = "abcde" | PASS |
 | T2 | check_signature with correct message | VALID | PASS |
 | T3 | check_signature with different message | NOTVALID | PASS |
 | T4 | check_signature after corrupting signature.bin | NOTVALID | PASS |
@@ -692,17 +692,17 @@ This assignment successfully demonstrates the implementation of a secure TCP str
 
 2. **Digital Signature (Task 2):** The `create_ds()` function generates a fresh RSA-2048 key pair, signs the message using SHA-256, and persists the keys and signature to disk. The `check_signature()` function correctly returns `VALID` for authentic messages and `NOTVALID` for any tampered or corrupted data.
 
-3. **Secure TCP Streaming:** The full client-server system combines both mechanisms — each message is AES-encrypted with a random IV and RSA-signed before sending. The server verifies the signature before decrypting, ensuring no wasted computation on forged packets.
+3. **Secure TCP Streaming:** The full client-server system combines both mechanisms - each message is AES-encrypted with a random IV and RSA-signed before sending. The server verifies the signature before decrypting, ensuring no wasted computation on forged packets.
 
 4. **Network Programming Concepts Applied:** POSIX TCP sockets (`socket`, `bind`, `listen`, `accept`, `connect`), reliable framing with `send_exact`/`recv_exact`, and network byte order conversion with `htonl`/`ntohl` were all applied correctly.
 
-The project reinforces the principle that **encryption provides confidentiality** while **digital signatures provide authenticity and integrity** — and that both are required together for truly secure communication.
+The project reinforces the principle that **encryption provides confidentiality** while **digital signatures provide authenticity and integrity** - and that both are required together for truly secure communication.
 
 ---
 
 ## APPENDICES
 
-### Appendix A — Build and Run Instructions
+### Appendix A - Build and Run Instructions
 
 ```bash
 # Step 1: Install dependencies
@@ -723,10 +723,10 @@ gcc -Wall -O2 -o test_corrupt test_corrupt.c -lssl -lcrypto
 
 # Step 6: Run TCP server + client (two terminals)
 ./server          # Terminal 1
-./client          # Terminal 2 — type messages
+./client          # Terminal 2 - type messages
 ```
 
-### Appendix B — File Descriptions
+### Appendix B - File Descriptions
 
 | File | Description |
 |---|---|
@@ -734,11 +734,11 @@ gcc -Wall -O2 -o test_corrupt test_corrupt.c -lssl -lcrypto
 | `secure_server.c` | TCP server: signature verification + AES decryption |
 | `secure_client.c` | TCP client: AES encryption + RSA signing + TCP send |
 | `crypto_tasks.c` | Standalone: encrypt, decrypt, create_ds, check_signature |
-| `test_corrupt.c` | Corruption test: VALID → corrupt → NOTVALID |
+| `test_corrupt.c` | Corruption test: VALID -> corrupt -> NOTVALID |
 | `generate_keys.sh` | Shell script to generate RSA-2048 key pair via openssl |
 | `Makefile` | Build system with targets: all, keys, clean |
 
-### Appendix C — Key Technical Concepts
+### Appendix C - Key Technical Concepts
 
 **AES-128-CBC:** Symmetric cipher using 128-bit key. CBC mode links each block to the previous ciphertext block using XOR, so identical plaintext blocks produce different ciphertext. PKCS#7 padding fills the final block.
 
@@ -746,7 +746,7 @@ gcc -Wall -O2 -o test_corrupt test_corrupt.c -lssl -lcrypto
 
 **SHA-256:** One-way hash function producing a 32-byte digest. Used as the message digest within the RSA signing operation. Any change to the message produces a completely different digest.
 
-**PKCS#7 Padding:** Padding scheme where N missing bytes are each filled with the value N. Example: 5-byte message in a 16-byte block → 11 bytes of value `0x0B` appended.
+**PKCS#7 Padding:** Padding scheme where N missing bytes are each filled with the value N. Example: 5-byte message in a 16-byte block -> 11 bytes of value `0x0B` appended.
 
 **PEM Format:** Base64-encoded key format surrounded by `-----BEGIN ...-----` headers. Used for RSA public and private key storage.
 
@@ -754,22 +754,22 @@ gcc -Wall -O2 -o test_corrupt test_corrupt.c -lssl -lcrypto
 
 ## BIBLIOGRAPHY / REFERENCES
 
-1. W. Richard Stevens, Bill Fenner, Andrew M. Rudoff — *Unix Network Programming, Volume 1: The Sockets Networking API*, 3rd Edition, Addison-Wesley, 2003
+1. W. Richard Stevens, Bill Fenner, Andrew M. Rudoff - *Unix Network Programming, Volume 1: The Sockets Networking API*, 3rd Edition, Addison-Wesley, 2003
 
-2. OpenSSL Project — *OpenSSL 3.0 EVP API Documentation*
+2. OpenSSL Project - *OpenSSL 3.0 EVP API Documentation*
    https://www.openssl.org/docs/man3.0/man3/EVP_EncryptInit_ex.html
 
-3. NIST FIPS 197 — *Advanced Encryption Standard (AES)*, National Institute of Standards and Technology, 2001
+3. NIST FIPS 197 - *Advanced Encryption Standard (AES)*, National Institute of Standards and Technology, 2001
 
-4. NIST FIPS 186-5 — *Digital Signature Standard (DSS)*, National Institute of Standards and Technology, 2023
+4. NIST FIPS 186-5 - *Digital Signature Standard (DSS)*, National Institute of Standards and Technology, 2023
 
-5. RSA Laboratories — *PKCS#1: RSA Cryptography Standard*, Version 2.2
+5. RSA Laboratories - *PKCS#1: RSA Cryptography Standard*, Version 2.2
 
-6. R. Rivest, A. Shamir, L. Adleman — *A Method for Obtaining Digital Signatures and Public-Key Cryptosystems*, Communications of the ACM, 1978
+6. R. Rivest, A. Shamir, L. Adleman - *A Method for Obtaining Digital Signatures and Public-Key Cryptosystems*, Communications of the ACM, 1978
 
-7. D. Eastlake, P. Jones — *RFC 3174: US Secure Hash Algorithm 1 (SHA1)*, IETF, 2001
+7. D. Eastlake, P. Jones - *RFC 3174: US Secure Hash Algorithm 1 (SHA1)*, IETF, 2001
 
-8. Brian W. Kernighan, Dennis M. Ritchie — *The C Programming Language*, 2nd Edition, Prentice Hall, 1988
+8. Brian W. Kernighan, Dennis M. Ritchie - *The C Programming Language*, 2nd Edition, Prentice Hall, 1988
 
 ---
 
